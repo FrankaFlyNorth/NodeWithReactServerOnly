@@ -21,8 +21,11 @@ passport.use(
       clientSecret: keys.googleClientSecret,
       callbackURL: "/auth/google/callback" // route the user is going to be send to after they grants permission to our app on google
     },
-    accessToken => {
-      console.log(accessToken);
+    // call back function is called when we successfully exchanged our code for a user profile
+    (accessToken, refreshToken, profile, done) => {
+      console.log("access token: ", accessToken);
+      console.log("refresh token: ", refreshToken);
+      console.log("profile    ", profile);
     }
   )
 );
@@ -30,11 +33,16 @@ passport.use(
 // route handler to start passport flow
 app.get(
   "/auth/google/",
+  // "google" is associated with the googleStrategy internally
   passport.authenticate("google", {
     // asking google to give us access to the users profile and email
     scope: ["profile", "email"]
   })
 );
+
+// this time passport sees the code inside the url, that google returned to us
+// so it knows that we are trying to get the actual user data this time (not like the route handler above)
+app.get("/auth/google/callback", passport.authenticate("google"));
 
 /* get the dynamic port Heroku provides us with.
    look at the underlying environment and see if they have declared a port for us to use OR

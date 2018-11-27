@@ -1,20 +1,40 @@
-// root file in our projecconst app
-
 const express = require("express");
+// import passport for authentification with google
+const passport = require("passport");
+const GoogleStategy = require("passport-google-oauth20").Strategy;
+// import client keys for our auth strategies
+const keys = require("./config/keys");
+
 /* generating our express application.
 app will be used to configure the different route handlers.
 app represents the underlying express server from now on.
 */
 const app = express();
 
-// create route handler and associate it with the express app
-// route handler that is listening to HTTP GET requests on the specified route ('/')
-// The arrow function is called automatically by express whenever a request comes in on the route.
-app.get("/", (req, res) => {
-  // immediatly close the request and
-  // send a json object as response back to the browser that send a request
-  res.send({ bye: "byee" });
-});
+/* Tell the general passport that there is a strategy that specifies on google auth
+   and tell it to use this.
+   Give client id and client secret which are provided directly from the google services */
+passport.use(
+  new GoogleStategy(
+    {
+      clientID: keys.googleClientID,
+      clientSecret: keys.googleClientSecret,
+      callbackURL: "/auth/google/callback" // route the user is going to be send to after they grants permission to our app on google
+    },
+    accessToken => {
+      console.log(accessToken);
+    }
+  )
+);
+
+// route handler to start passport flow
+app.get(
+  "/auth/google/",
+  passport.authenticate("google", {
+    // asking google to give us access to the users profile and email
+    scope: ["profile", "email"]
+  })
+);
 
 /* get the dynamic port Heroku provides us with.
    look at the underlying environment and see if they have declared a port for us to use OR

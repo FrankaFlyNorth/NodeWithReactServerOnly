@@ -13,7 +13,7 @@ const app = express();
 app.get("/", (req, res) => {
   // immediatly close the request and
   // send a json object as response back to the browser that send a request
-  res.send({ hi: "there" });
+  res.send({ bye: "byee" });
 });
 
 /* get the dynamic port Heroku provides us with.
